@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI/ML Fake News Detector</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 20px; color: #172033; }
+    textarea { width: 100%; min-height: 220px; box-sizing: border-box; padding: 12px; font: inherit; }
+    button { margin-top: 12px; padding: 10px 18px; cursor: pointer; }
+    #result { margin-top: 20px; padding: 15px; background: #f3f4f6; border-radius: 8px; }
+    .note { color: #4b5563; }
+  </style>
+</head>
+<body>
+  <h1>AI/ML Fake News Detector</h1>
+  <p>Paste a news article to classify it using a model trained on labeled examples.</p>
+  <textarea id="text" placeholder="Paste article text here..."></textarea>
+  <br><button id="check">Analyze article</button>
+  <div id="result" role="status" hidden></div>
+  <p class="note">Educational tool only: a model prediction does not verify whether a claim is true.</p>
+  <script>
+    document.querySelector("#check").addEventListener("click", async () => {
+      const result = document.querySelector("#result");
+      result.hidden = false;
+      result.textContent = "Analyzing…";
+      try {
+        const response = await fetch("/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: document.querySelector("#text").value })
+        });
+        const data = await response.json();
+        result.textContent = response.ok
+          ? `Model prediction: ${data.prediction.toUpperCase()} (model confidence: ${data.confidence}%). This is not a fact-check.`
+          : data.error;
+      } catch (_) {
+        result.textContent = "Could not reach the server. Please try again.";
+      }
+    });
+  </script>
+</body>
+</html>
